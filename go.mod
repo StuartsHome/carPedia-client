@@ -1,4 +1,4 @@
-module github.com/stuartshome/carPedia-client
+module github.com/StuartsHome/carPedia-client
 
 go 1.16
 
