@@ -54,7 +54,7 @@ func NewClient(httpClient *http.Client, opts ClientOpts) *Client {
 
 }
 
-func (c *Client) Get(ctx context.Context)
+// func (c *Client) Get(ctx context.Context)
 
 type APIError struct {
 	Code    int    `json: "code"`
