@@ -21,7 +21,7 @@ func (c *CarService) Car(ctx context.Context, opts *CarOptions) (*Response, erro
 	}
 
 	u := fmt.Sprintf("home/%s", params.Encode())
-	req, err := c.client.NewRequest(http.MethodGet, u, nil)
+	req, err := c.client.NewRequest(http.MethodGet, u, "")
 	if err != nil {
 		return nil, err
 	}
