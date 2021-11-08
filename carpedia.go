@@ -43,17 +43,17 @@ type Client struct {
 	Car *CarService
 }
 
-func NewClient(httpClient *http.Client, opts ClientOpts) *Client {
+func NewClient(opts ClientOpts) *Client {
+	cl := http.Client{Timeout: time.Minute}
 	baseURL, _ := url.Parse(defaultBaseURL)
 	c := &Client{
-		client: httpClient,
+		client: &cl,
 		opts: ClientOpts{
 			BaseURL: baseURL,
 		},
 	}
 	c.common.client = c
 	c.Car = (*CarService)(&c.common)
-
 	return c
 
 }

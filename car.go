@@ -16,16 +16,14 @@ func (c *CarService) Car(ctx context.Context, opts *CarOptions) (*http.Response,
 	// if err != nil {
 	// 	return nil, err
 	// }
-
 	// u := fmt.Sprint("home", params.Encode())
-	u := "home"
+
+	u := "car"
 	req, err := c.client.NewRequest(http.MethodGet, u, nil)
-	// req, err := c.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	// return c.client.defaultDo(ctx, req)
 	return c.client.client.Do(req)
 }
