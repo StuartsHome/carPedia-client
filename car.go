@@ -2,10 +2,7 @@ package carpedia
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-
-	qs "github.com/google/go-querystring/query"
 )
 
 type CarService service
@@ -13,19 +10,22 @@ type CarService service
 type CarOptions struct {
 }
 
-func (c *CarService) Car(ctx context.Context, opts *CarOptions) (*Response, error) {
+func (c *CarService) Car(ctx context.Context, opts *CarOptions) (*http.Response, error) {
 
-	params, err := qs.Values(opts)
-	if err != nil {
-		return nil, err
-	}
+	// params, err := qs.Values(opts)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	u := fmt.Sprintf("home/%s", params.Encode())
-	req, err := c.client.NewRequest(http.MethodGet, u, "")
+	// u := fmt.Sprint("home", params.Encode())
+	u := "home"
+	req, err := c.client.NewRequest(http.MethodGet, u, nil)
+	// req, err := c.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	return c.client.defaultDo(ctx, req)
+	// return c.client.defaultDo(ctx, req)
+	return c.client.client.Do(req)
 }

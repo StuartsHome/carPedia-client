@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	defaultBaseURL = "http://localhost:8100/home"
+	defaultBaseURL = "http://localhost:8100/"
 )
 
 type Response struct {
@@ -38,6 +38,8 @@ type Client struct {
 	client *http.Client
 	opts   ClientOpts
 
+	common service
+
 	Car *CarService
 }
 
@@ -49,12 +51,26 @@ func NewClient(httpClient *http.Client, opts ClientOpts) *Client {
 			BaseURL: baseURL,
 		},
 	}
+	c.common.client = c
+	c.Car = (*CarService)(&c.common)
+
 	return c
-	// c.Search = (*SearchService)
 
 }
 
-// func (c *Client) Get(ctx context.Context)
+func (c *Client) Get(ctx context.Context, url string) (*http.Response, error) {
+	req, err := c.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	// return c.defaultDo(ctx, req)
+	return c.client.Do(req)
+
+}
+
+// func (c *Client) Do(ctx context.Context, req *http.Request) (*Response, error) {
+
+// }
 
 type APIError struct {
 	Code    int    `json: "code"`
