@@ -40,7 +40,8 @@ type Client struct {
 
 	common service
 
-	Car *CarService
+	Car  *CarService
+	Desc *DescService
 }
 
 func NewClient(opts ClientOpts) *Client {
@@ -54,6 +55,7 @@ func NewClient(opts ClientOpts) *Client {
 	}
 	c.common.client = c
 	c.Car = (*CarService)(&c.common)
+	c.Desc = (*DescService)(&c.common)
 	return c
 
 }

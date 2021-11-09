@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -38,19 +37,6 @@ func setup() (client *Client, mux *http.ServeMux, serverURL string) {
 }
 */
 
-func setup() (client *Client, mux *http.ServeMux, serverURL string) {
-	mux = http.NewServeMux()
-	server := httptest.NewServer(mux)
-	// apiHandler := http.NewServeMux()
-	opts := ClientOpts{}
-	client = NewClient(opts)
-
-	url, _ := url.Parse(server.URL + "/")
-	client.opts.BaseURL = url
-
-	return client, mux, server.URL
-
-}
 func TestCarUseSetup(t *testing.T) {
 	client, mux, _ := setup()
 	body := "tony"
@@ -63,8 +49,7 @@ func TestCarUseSetup(t *testing.T) {
 
 		w.Write([]byte(body))
 		fmt.Fprint(w, "hello")
-		testMethod(t, r, http.MethodPost)
-		testHeader(t, r, "Accept", "")
+		testMethod(t, r, http.MethodGet)
 	})
 
 	ctx := context.Background()
@@ -123,7 +108,7 @@ func testMethod(t *testing.T, r *http.Request, want string) {
 
 func testHeader(t *testing.T, r *http.Request, header, want string) {
 	t.Helper()
-	if got := r.Method; got != want {
+	if got := r.Header.Get(header); got != want {
 		t.Errorf("header.Get(%q) returned %q, want %q", header, got, want)
 	}
 }

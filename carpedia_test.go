@@ -1,5 +1,11 @@
 package carpedia
 
+import (
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+)
+
 /*
 	FPrintf writes to the io.Writer instance passed in
 	Printf writes to the standard output
@@ -8,6 +14,20 @@ package carpedia
 const (
 	baseURLPath = "/api-test"
 )
+
+func setup() (client *Client, mux *http.ServeMux, serverURL string) {
+	mux = http.NewServeMux()
+	server := httptest.NewServer(mux)
+	// apiHandler := http.NewServeMux()
+	opts := ClientOpts{}
+	client = NewClient(opts)
+
+	url, _ := url.Parse(server.URL + "/")
+	client.opts.BaseURL = url
+
+	return client, mux, server.URL
+
+}
 
 // func setup() (client *Client, mux *http.ServeMux, serverURL string, teardown func()) {
 // 	// mux = http.NewServeMux()
