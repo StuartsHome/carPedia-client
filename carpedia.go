@@ -17,6 +17,12 @@ const (
 	defaultBaseURL = "http://localhost:8100/"
 )
 
+type Desc struct {
+	Id    int64  `json:"id"`
+	Title string `json:"title"`
+	Text  string `json:"text"`
+}
+
 type Response struct {
 	*http.Response
 }
@@ -40,6 +46,7 @@ type Client struct {
 
 	common service
 
+	App  *AppService
 	Car  *CarService
 	Desc *DescService
 }
@@ -54,6 +61,7 @@ func NewClient(opts ClientOpts) *Client {
 		},
 	}
 	c.common.client = c
+	c.App = (*AppService)(&c.common)
 	c.Car = (*CarService)(&c.common)
 	c.Desc = (*DescService)(&c.common)
 	return c

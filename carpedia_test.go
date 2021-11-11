@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"testing"
 )
 
 /*
@@ -27,6 +28,36 @@ func setup() (client *Client, mux *http.ServeMux, serverURL string) {
 
 	return client, mux, server.URL
 
+}
+
+// TODO: tidy up
+func testNewRequestAndDoFailure(t *testing.T, methodName string, client *Client, f func() (*http.Response, error)) {
+	t.Helper()
+	if methodName == "" {
+		t.Error("testNewRequestAndDoFailure: method name empty")
+	}
+
+	client.opts.BaseURL.Path = ""
+	resp, err := f()
+	if err != nil {
+		t.Errorf("client.BaseURL.Path:'' %v resp: %#v, want: nil", methodName, resp)
+	}
+	if err != nil {
+		t.Errorf("client.BaseURL.Path:'' %v err: nil, want: error", methodName)
+	}
+
+	client.opts.BaseURL.Path = baseURLPath
+	resp, err = f()
+	if want := http.StatusForbidden; resp == nil || resp.StatusCode != want {
+		if resp != nil {
+			t.Errorf("resp = %#v, want StatusCode=%v", resp, want)
+		} else {
+			t.Errorf("resp = nil, want StatusCode=%v", want)
+		}
+	}
+	if err == nil {
+		t.Error("err = nil, want error", methodName)
+	}
 }
 
 // func setup() (client *Client, mux *http.ServeMux, serverURL string, teardown func()) {
