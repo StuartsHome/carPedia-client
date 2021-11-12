@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"testing"
-	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
@@ -167,12 +166,12 @@ func TestGetDescById(t *testing.T) {
 
 	assert.Equal(t, want, got)
 
-}
+	// api failure
+	mux.HandleFunc("/desc/1", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+	})
 
-type Timestamp struct {
-	time.Time
-}
+	response, err = client.Desc.GetDescById(ctx, 1, &opts)
+	t.Log(response, err)
 
-func (t Timestamp) Equal(u Timestamp) bool {
-	return t.Time.Equal(u.Time)
 }

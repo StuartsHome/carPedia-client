@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -35,6 +36,7 @@ type ClientOpts struct {
 	ApiKey     string
 	ApiSecret  string
 	BaseURL    *url.URL
+	RateLimits rates
 	RetryLimit int
 	RetryDelay time.Duration
 	Timeout    time.Duration
@@ -49,6 +51,8 @@ type Client struct {
 	App  *AppService
 	Car  *CarService
 	Desc *DescService
+
+	// do we need a mutex?
 }
 
 func NewClient(opts ClientOpts) *Client {
@@ -91,6 +95,16 @@ func (c *Client) defaultDo(ctx context.Context, req *http.Request) (*Response, e
 	/*
 		No oauth yet
 	*/
+
+	if ctx == nil {
+		return nil, errors.New("context must not be nil")
+	}
+
+	// if the current request is subject to rate limiting
+	if rateLimits := ctx.Value(noRateLimitCheck); rateLimits == nil {
+		// if we've hit the rate limit
+		// if err := c
+	}
 
 	var resp *Response
 	var err error
@@ -154,5 +168,48 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 
 	// TODO: userAgent?
 	return req, nil
+}
+
+const noRateLimitCheck = iota
+
+type rates map[string]Rate
+
+// The rate limit for the current client
+type Rate struct {
+	Limit     int       `json:"limit"`
+	Remaining int       `json:"remaining"` // the number of requests this client can make per hour
+	Reset     Timestamp `json: "reset"`
+}
+
+type RateLimitError struct {
+	Rate     Rate
+	Response *http.Response
+	Message  string `json:"message"`
+	Code     int
+}
+
+type Timestamp struct {
+	time.Time
+}
+
+func (t Timestamp) Equal(u Timestamp) bool {
+	return t.Time.Equal(u.Time)
+}
+
+func (c *Client) RateLimits(ctx context.Context) (*Rate, *http.Response, error) {
+	req, err := c.NewRequest(http.MethodGet, "rate_limit", nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	fmt.Println(req)
+
+	ctx = context.WithValue(ctx, noRateLimitCheck, true)
+	return nil, nil, nil
+}
+
+// TODO: finish up
+func (c *Client) checkRateLimitBeforeDo(req *http.Request) *RateLimitError {
+	// rate := c.opts.RateLimits
+	return nil
 
 }

@@ -60,6 +60,16 @@ func testNewRequestAndDoFailure(t *testing.T, methodName string, client *Client,
 	}
 }
 
+func TestDoRequest(t *testing.T) {
+
+}
+
+func TestDoRequest_NilContext(t *testing.T) {}
+
+func TestNewClient(t *testing.T) {}
+
+func TestNewRequest(t *testing.T) {}
+
 // func setup() (client *Client, mux *http.ServeMux, serverURL string, teardown func()) {
 // 	// mux = http.NewServeMux()
 

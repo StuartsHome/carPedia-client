@@ -1,5 +1,0 @@
-package carpedia
-
-func aa() {
-
-}
