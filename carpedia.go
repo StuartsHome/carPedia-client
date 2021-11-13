@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -34,10 +33,9 @@ type service struct {
 }
 
 type ClientOpts struct {
-	ApiKey    string
-	ApiSecret string
-	BaseURL   *url.URL
-	// RateLimits rates
+	ApiKey     string
+	ApiSecret  string
+	BaseURL    *url.URL
 	RateLimits [categories]Rate
 	RetryDelay time.Duration
 	RetryLimit int
@@ -58,9 +56,11 @@ type Client struct {
 }
 
 func NewClient(opts ClientOpts) *Client {
-	cl := http.Client{}
 	if opts.Timeout == 0 {
 		opts.Timeout = time.Minute
+	}
+	cl := http.Client{
+		Timeout: opts.Timeout,
 	}
 	baseURL, _ := url.Parse(defaultBaseURL)
 	if opts.BaseURL == nil {
@@ -118,7 +118,7 @@ func (c *Client) defaultDo(ctx context.Context, req *http.Request) (*http.Respon
 
 	for i := 0; ; i++ {
 
-		resp, err := c.client.Do(req)
+		resp, err = c.client.Do(req)
 		if err != nil {
 			return nil, err
 		}
@@ -131,16 +131,10 @@ func (c *Client) defaultDo(ctx context.Context, req *http.Request) (*http.Respon
 		time.Sleep(c.opts.RetryDelay)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
+	// if resp.Body == nil {
+	// 	return nil, errors.New("error empty response body")
+	// }
 
-	var apiErr APIError
-	err = json.Unmarshal(body, &apiErr)
-	if err != nil {
-		return nil, fmt.Errorf("HTTP %s: %s", resp.Status, body)
-	}
 	return resp, nil
 
 }
