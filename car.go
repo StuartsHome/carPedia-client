@@ -25,5 +25,5 @@ func (c *CarService) Car(ctx context.Context, opts *CarOptions) (*http.Response,
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	return c.client.client.Do(req)
+	return c.client.defaultDo(ctx, req)
 }

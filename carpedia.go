@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -33,36 +34,48 @@ type service struct {
 }
 
 type ClientOpts struct {
-	ApiKey     string
-	ApiSecret  string
-	BaseURL    *url.URL
-	RateLimits rates
-	RetryLimit int
+	ApiKey    string
+	ApiSecret string
+	BaseURL   *url.URL
+	// RateLimits rates
+	RateLimits [categories]Rate
 	RetryDelay time.Duration
+	RetryLimit int
 	Timeout    time.Duration
 }
 
 type Client struct {
 	client *http.Client
-	opts   ClientOpts
+
+	mu   sync.Mutex
+	opts ClientOpts
 
 	common service
 
 	App  *AppService
 	Car  *CarService
 	Desc *DescService
-
-	// do we need a mutex?
 }
 
 func NewClient(opts ClientOpts) *Client {
-	cl := http.Client{Timeout: time.Minute}
+	cl := http.Client{}
+	if opts.Timeout == 0 {
+		opts.Timeout = time.Minute
+	}
 	baseURL, _ := url.Parse(defaultBaseURL)
+	if opts.BaseURL == nil {
+		opts.BaseURL = baseURL
+	}
+	if opts.RetryLimit == 0 {
+		opts.RetryLimit = 3
+	}
+	if opts.RetryDelay == 0 {
+		opts.RetryDelay = time.Minute
+	}
+
 	c := &Client{
 		client: &cl,
-		opts: ClientOpts{
-			BaseURL: baseURL,
-		},
+		opts:   opts,
 	}
 	c.common.client = c
 	c.App = (*AppService)(&c.common)
@@ -91,7 +104,7 @@ type APIError struct {
 	Message string `json: "message"`
 }
 
-func (c *Client) defaultDo(ctx context.Context, req *http.Request) (*Response, error) {
+func (c *Client) defaultDo(ctx context.Context, req *http.Request) (*http.Response, error) {
 	/*
 		No oauth yet
 	*/
@@ -100,17 +113,11 @@ func (c *Client) defaultDo(ctx context.Context, req *http.Request) (*Response, e
 		return nil, errors.New("context must not be nil")
 	}
 
-	// if the current request is subject to rate limiting
-	if rateLimits := ctx.Value(noRateLimitCheck); rateLimits == nil {
-		// if we've hit the rate limit
-		// if err := c
-	}
-
-	var resp *Response
+	var resp *http.Response
 	var err error
+
 	for i := 0; ; i++ {
 
-		// resp, err := c.Do(ctx, req)
 		resp, err := c.client.Do(req)
 		if err != nil {
 			return nil, err
@@ -170,9 +177,16 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 	return req, nil
 }
 
-const noRateLimitCheck = iota
+type rateLimitCategory uint8
 
-type rates map[string]Rate
+const (
+	noRateLimitCheck rateLimitCategory = iota
+	rateLimitCheck
+
+	categories
+)
+
+// type rates map[string]Rate
 
 // The rate limit for the current client
 type Rate struct {
