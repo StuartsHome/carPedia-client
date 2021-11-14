@@ -10,7 +10,7 @@ type CarService service
 type CarOptions struct {
 }
 
-func (c *CarService) Car(ctx context.Context, opts *CarOptions) (*http.Response, error) {
+func (c *CarService) Car(ctx context.Context, opts *CarOptions) (*Response, error) {
 
 	// params, err := qs.Values(opts)
 	// if err != nil {

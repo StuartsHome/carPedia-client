@@ -12,7 +12,7 @@ type DescService service
 type DescOptions struct {
 }
 
-func (d *DescService) GetDesc(ctx context.Context, opts *DescOptions) (*http.Response, error) {
+func (d *DescService) GetDesc(ctx context.Context, opts *DescOptions) (*Response, error) {
 	u := "desc"
 	req, err := d.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
@@ -20,11 +20,11 @@ func (d *DescService) GetDesc(ctx context.Context, opts *DescOptions) (*http.Res
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	return d.client.client.Do(req)
+	return d.client.defaultDo(ctx, req)
 
 }
 
-func (d *DescService) AddDesc(ctx context.Context, input *Desc, opts *DescOptions) (*http.Response, error) {
+func (d *DescService) AddDesc(ctx context.Context, input *Desc, opts *DescOptions) (*Response, error) {
 
 	u := "desc"
 	body, err := json.Marshal(&input)
@@ -37,7 +37,7 @@ func (d *DescService) AddDesc(ctx context.Context, input *Desc, opts *DescOption
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	b, err := d.client.client.Do(req)
+	b, err := d.client.defaultDo(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -45,9 +45,9 @@ func (d *DescService) AddDesc(ctx context.Context, input *Desc, opts *DescOption
 
 }
 
-func (d *DescService) AddDescs(ctx context.Context, input *[]Desc, opts *DescOptions) ([]*http.Response, []error) {
+func (d *DescService) AddDescs(ctx context.Context, input *[]Desc, opts *DescOptions) ([]*Response, []error) {
 
-	var statuses []*http.Response
+	var statuses []*Response
 	var errs []error
 	for _, desc := range *input {
 		response, err := d.AddDesc(ctx, &desc, opts)
@@ -63,7 +63,7 @@ func (d *DescService) AddDescs(ctx context.Context, input *[]Desc, opts *DescOpt
 	return statuses, nil
 }
 
-func (d *DescService) GetDescById(ctx context.Context, id int, opts *DescOptions) (*http.Response, error) {
+func (d *DescService) GetDescById(ctx context.Context, id int, opts *DescOptions) (*Response, error) {
 
 	u := fmt.Sprintf("desc/%d", id)
 
@@ -73,6 +73,6 @@ func (d *DescService) GetDescById(ctx context.Context, id int, opts *DescOptions
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	return d.client.client.Do(req)
+	return d.client.defaultDo(ctx, req)
 
 }
